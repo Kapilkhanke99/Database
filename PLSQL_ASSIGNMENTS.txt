@@ -1,0 +1,426 @@
+1)
+delimiter //
+create procedure records(eno int,en varchar (20),s double(9,2),j varchar(20),hd date)
+begin
+insert into emp(empno,ename,sal,job,hiredate) values(eno,en,s,j,hd);
+end //
+
+
+2)
+delimiter //
+create procedure del_rec(eno int)
+begin
+delete from emp
+where empno=eno;
+end //
+
+3)
+delimiter //
+create procedure display1(salary double(9,2))
+begin
+select e.empno,e.ename,d.deptno,d.dname
+from emp e inner join dept d on e.deptno=d.deptno
+where sal>salary;
+end //
+
+4)
+delimiter //
+create procedure display4(d int,out min double(9,2),out max double(9,2),out avg double(9,2),out count int)
+begin
+select min(sal),max(sal),avg(sal),count(*)
+from emp
+where deptno=d;
+end //
+
+5)
+delimiter //
+create procedure showdet()
+begin
+select p.pid,p.pname,c.cid,c.cnam,s.sname
+from product p left join category c on p.cid=c.cid left join salesman s on p.sid=s.sid; 
+end //
+ 
+6)
+delimiter //
+create procedure dispvehicle(cn varchar(20))
+begin
+select *
+from vehicle v inner join cust_vehicle cv on v.vid=cv.vid inner join customer c on cv.custid=c.custid inner join salesman s on cv.sid=s.sid
+where cname=cn;
+end //
+
+
+----------------------------------------------------------------
+
+delimiter //
+create procedure tocount1(start  int,stop int)
+begin
+declare cnt int;
+set cnt=start;
+while(cnt<=stop)
+do
+set cnt=cnt+1;
+end while;
+select cnt;
+end //
+
+
+delimiter //
+create procedure factorial(num int)
+begin
+declare cnt int default 1;
+declare fact int default 1;
+while cnt<=num
+do
+set fact=fact*cnt;
+set cnt=cnt+1;
+end while;
+select fact;
+end//
+
+delimiter //
+create procedure hello1(num int)
+begin
+declare start int default 1;
+declare h varchar(20) default 'hello';
+declare str varchar(200) default '';
+while start<=num
+do
+set str=concat(h,';',str);
+set start=start+1;
+end while;
+select str;
+end //
+
+delimiter //
+create procedure sumn(num int)
+begin
+declare start int default 1;
+declare sum int default 0;
+while start <= num
+do
+set sum=sum+start;
+set start=start+1;
+end while;
+select sum;
+end //
+
+
+delimiter //
+create procedure reverse(num int)
+begin
+declare cnt int default 1;
+declare str varchar(200) default '';
+while cnt<=num
+do
+set str = concat(str,num,';');
+set num = num-1;
+end while;
+select str;
+end //
+
+delimiter //
+create procedure fibonic(num int)
+begin
+declare a int;
+declare b int;
+declare str varchar(200) default '';
+declare sum int default 0;
+declare cnt int default 1;
+set a=0;
+set b=1;
+while cnt<=num
+do
+set str = concat(str,a,';');
+set sum=a+b;
+set a=b;
+set b=sum;
+set cnt=cnt+1;
+end while;
+select str;
+end //
+
+
+delimiter //
+create procedure welcome1(num int)
+begin
+declare start int default 1;
+declare str varchar(2000) default '';
+declare cnt int default 1;
+declare x varchar(20);
+set x='welcome';
+while cnt<=num
+do
+set str=concat(str,x,';');
+set cnt=cnt+1;
+end while;
+select str;
+end //
+------------------------------------------------------------------------------
+out eno int,out n varchar(20),out j varchar(20),out s double(9,2),out status varchar(20),out d intin 
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------
+CURSER:
+
+delimiter //
+create procedure to_display_cur()
+begin
+declare finished int default 0;
+declare vempno,vdeptno,vmgr int;
+declare vename,vjob varchar(20);
+declare vsal,vcomms double(9,2);
+declare vhiredate date;
+declare emp_cur cursor for select * from emp;
+declare continue handler for not found set finished =1;
+
+open emp_cur;
+l1:loop
+fetch emp_cur into vempno,vename,vjob,vmgr,vhiredate,vsal,vcomms,vdeptno;
+if finished=1 then
+leave l1;
+end if;
+select vempno,vename,vjob,vsal,vcomms;
+end loop;
+close emp_cur;
+end //
+
+
+delimiter //
+create procedure displaycursor(out vempno int,out vename varchar(20),out vsal double(9,2))
+begin
+declare finished int default 0;
+declare emp_cur cursor for select empno,ename,sal from emp;
+declare continue handler for not found set finished =1;
+
+open emp_cur;
+l1:loop
+fetch emp_cur into vempno,vename,vsal;
+if finished=1 then
+leave l1;
+end if;
+select vempno,vename,vsal;
+end loop;
+close emp_cur;
+end //
+
+
+delimiter //
+create procedure displaypr()
+begin
+declare finished int default 0;
+declare vpid ,vpname varchar(20);
+declare vprice double(9,2); 
+declare vqty,vcid,vsid int;
+declare p_cursor cursor for select * from product;
+declare continue handler for not found set finished=1;
+
+open p_cursor ;
+l1:loop
+fetch p_cursor into vpid,vpname,vprice,vcid,vsid,vqty;
+if finished=1 
+then
+leave l1;
+end if;
+select vpid,vpname,vprice,vcid,vsid,vqty;
+end loop;
+close p_cursor;
+end //
+
+
+
+delimiter //
+create procedure displayme(vdeptno int,out vempno int,out vename varchar(20))
+begin
+declare finished int default 0;
+declare my_cur cursor for select empno,ename from emp where deptno>vdeptno;
+declare continue handler for not found set finished=1;
+open my_cur;
+l1:loop
+fetch my_cur into vempno,vename;
+if finished=1
+then
+leave l1;
+end if;
+select vempno,vename;
+end loop;
+close my_cur;
+end //
+
+
+delimiter //
+create procedure updatesal()
+begin
+declare mcnt,acnt,ccnt,ocnt int default 0;
+declare vempno,vmgr,vdeptno int;
+declare vename,vjob varchar(20);
+declare vsal,vcomm,vupd double(9,2);
+declare vhiredate date;
+declare finished int default 0;
+declare emp_cur cursor for select * from emp;
+declare continue handler for not found set finished=1;
+
+open emp_cur;
+l1:loop
+fetch emp_cur into vempno,vename,vjob,vmgr,vhiredate,vsal,vcomm,vdeptno;
+if finished =1
+then
+leave l1;
+end if;
+if vjob='manager' then
+set vupd=1.1*vsal;
+update emp
+set sal=1.1*sal
+where ename=vename;
+set mcnt=mcnt+1;
+elseif vjob='analyst' then
+set vupd=1.2*vsal;
+update emp
+set sal=1.2*sal
+where ename=vename;
+set acnt=acnt+1;
+elseif vjob='clerk' then
+set vupd=1.25*vsal;
+update emp
+set sal=1.25*sal
+where ename=vename;
+set ccnt=ccnt+1;
+else
+set vupd=1.08*vsal;
+update emp
+set sal=1.08*sal
+where ename=vename;
+set ocnt=ocnt+1;
+end if;
+select vempno,vename,vjob,vmgr,vhiredate,vsal,vcomm,vdeptno;
+end loop;
+select mcnt,acnt,ccnt,ocnt;
+close emp_cur;
+end //
+
+-------------------------------------------------------------------------------------------------------
+7.
+delimiter //
+create procedure infoallemp()
+begin
+declare finished int default 0;
+declare vempno,vdeptno int;
+declare vename,vjob,vstatus varchar(20);
+declare vsalary double(9,2);
+declare emp_cur cursor for select empno,ename,job,sal,deptno from emp;
+declare continue handler for not found set finished=1;
+
+open emp_cur;
+l1:loop
+fetch emp_cur into vempno,vename,vjob,vsalary,vdeptno;
+if finished=1 then
+leave l1;
+end if;
+if vsalary>(select avg(sal) from emp d where d.deptno=vdeptno) 
+then
+set vstatus='greater';
+elseif vsalary<(select avg(sal) from emp d where d.deptno=vdeptno)
+then
+set vstatus='lesser';
+else 
+set vstatus='equal';
+end if;
+select vempno, vename, vjob, vsalary,vdeptno,vstatus;
+end loop;
+close emp_cur;
+end //
+
+
+8.
+delimiter //
+create procedure updateonexp()
+begin
+declare vempno,vdeptno int;
+declare vename,vjob varchar(20);
+declare vsal,vexp double(9,2);
+declare finished int default 0;
+declare emp_cur cursor for select empno,ename,job,deptno,sal,datediff(curdate(),hiredate)/365 from emp;
+declare continue handler for not found set finished=1;
+
+open emp_cur ;
+l1:loop
+fetch emp_cur into vempno,vename,vjob,vdeptno,vsal,vexp;
+if finished=1
+then
+leave l1;
+end if;
+if vexp<=35 then
+set vsal=vsal;
+update emp
+set sal=vsal;
+elseif vexp>35 and vexp <=38 then
+set vsal=1.2*vsal;
+update emp
+set sal=vsal;
+else 
+set vsal=1.25*vsal;
+update emp
+set sal=vsal;
+end if;
+select vempno,vename,vjob,vdeptno,vsal,vexp;
+end loop;
+close emp_cur;
+end //
+-----------------------------------------------------------------------------
+delimiter //
+create function  get_email(vname varchar(20),vjob varchar(20))returns varchar(50)
+begin
+declare email varchar(50);
+set email=concat(substr(vname,1,3),'.',substring(vjob,1,3),'@mycompany.com');
+return email;
+end //
+
+delimiter //
+create function hire_exp(hdate date)returns int
+begin
+declare experience int;
+set experience=floor(datediff(curdate(),hdate));
+return experience;
+end //
+
+-----------------------------------------------------------------------------
+9.
+delimiter //
+create function years_exp(hdate date)returns int
+begin 
+declare exp int;
+set exp=floor(datediff(curdate(),hdate)/365);
+return exp;
+end //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

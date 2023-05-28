@@ -1,0 +1,246 @@
+create table mydept_DBDA
+(
+deptid int(5) primary key,
+dname varchar(20) not null unique,
+dloc varchar(20)
+)
+
+insert into mydept_DBDA values(30,'Purchase','Mumbai');
+
+create table myemployee
+(
+empno int(5) primary key,
+fname varchar(20) not null,
+mname varchar(20),
+iname varchar(15) not null,
+sal double(9,2) check(sal>=1000),
+doj date default (current_date),
+passportnum varchar(20) unique,
+deptno int(5), constraint fk_deptno foreign key(deptno) references mydept_DBDA(deptid) on delete cascade
+)
+
+
+create table student
+(
+sid int primary key,
+sname varchar(20)
+);
+
+create table Course
+(
+cid int primary key,
+cname varchar(20)
+);
+
+create table Marks
+(
+studid int, foreign key(studid) references Student(sid) on delete cascade,
+courseid int, foreign key(courseid) references course(cid),
+marks int
+);
+
+insert into Student values(1,'ronaldo');
+insert into Student values(2,'messi');
+
+insert into Course values(1,'java');
+insert into Course values(2,'dbs');
+insert into Course values(3,'sdm');
+
+
+insert into Marks values(1,1,99);
+insert into Marks values(1,3,98);
+insert into Marks values(2,1,95);
+insert into Marks values(2,1,97);
+
+
+create view emp10
+as
+select *
+from emp
+where 1=2
+;
+
+ALTER TABLE emp
+ADD CONSTRAINT pk_emp PRIMARY KEY (empno);
+ALTER TABLE dept
+ADD CONSTRAINT pk_dep PRIMARY KEY (deptno);
+ALTER TABLE salgrade
+ADD CONSTRAINT pk_sal PRIMARY KEY (grade);
+
+
+35
+update emp set sal=1.15*sal+ifnull(comm,0),job='manager',mgr=777 where deptno=10;
+
+36
+update emp set job='s.clerk' where ename='smith'
+
+37
+update emp set sal=1.15*sal+ifnull(comm,0) where comm is not null;
+
+38
+select *
+from emp where sal>(select sal from emp where ename='smith')
+
+39
+select *
+from emp
+where deptno=(select deptno from emp where ename='smith')
+
+40
+select *
+from emp
+where sal between (select sal from emp where ename='adams') and (select sal from emp where ename='Ford')
+
+42
+update emp 
+set sal=(select sal from(select * from emp)d where d.ename='miller')
+where ename='allen' ;
+
+43
+update emp
+set sal =(select sal from(select * from emp)e where e.ename='miller')
+where deptno=(select deptno from(select * from emp)d where d.ename='ward');
+
+44
+select *
+from emp
+where sal>(select sal from emp where ename='smith')or(select sal from emp where ename='allen');
+
+45
+select *
+from emp where sal>(select avg(sal) from emp where deptno=10);
+
+46
+select *
+from emp where sal>(select avg(sal) from emp d where d.deptno=(select deptno from emp e where e.ename='allen'));
+
+47
+select *
+from emp
+where deptno=(select deptno from dept where dname='purchase'); 
+
+48
+select *
+from emp 
+where sal>(select avg(d.sal) from emp d inner join emp e on d.deptno=e.deptno);
+
+49
+select *
+from emp e
+where sal <(select d.sal from emp d where d.empno=e.mgr);
+
+50
+select *
+from emp 
+where sal>(select avg(e.sal) from emp e right join emp d on e.job=d.job);
+
+51
+select e.ename,d.dname
+from emp e left join dept d on e.deptno=d.deptno; 
+
+52
+select e.empno,e.ename,d.dname,s.grade
+from emp e left join dept d on e.deptno=d.deptno inner join salgrade s on e.sal between s.losal and s.hisal ;
+
+53
+select e.empno,e.ename,e.mgr,d.ename
+from emp e left join emp d on e.mgr=d.empno;
+
+54.1
+select p.pname,c.cnam,s.sname
+from product p left join category c on p.cid=c.cid left join salesman s on p.sid=s.sid;  
+
+54.2
+select p.pname,s.sname
+from product p right join salesman s on p.sid=s.sid
+where s.address='pune';
+
+54.3
+select p.pname,c.cnam
+from product p left join category c on p.cid=c.cid;
+
+55
+CREATE TABLE faculty (
+  fid INT PRIMARY KEY,
+  fname VARCHAR(50),
+  spskill1 VARCHAR(50),
+  spskill2 VARCHAR(50)
+);
+
+CREATE TABLE room (
+  rid INT PRIMARY KEY,
+  rname VARCHAR(50),
+  rloc VARCHAR(50)
+);
+
+CREATE TABLE courses (
+  cid INT PRIMARY KEY,
+  cname VARCHAR(50),
+  rid INT,
+  fid INT,
+  FOREIGN KEY (fid) REFERENCES faculty(fid),
+  FOREIGN KEY (rid) REFERENCES room(rid)
+);
+
+INSERT INTO faculty 
+VALUES
+  (10, 'kjzhcjhz', 'a', 'b'),
+  (11, 'sdd', 'x', 'z'),
+  (12, 'lksjk', 'a', 'x'),
+  (13, 'ksdjlkj', 'a', 'b');
+
+INSERT INTO courses 
+VALUES
+  (121, 'DBDA', 100, 10),
+  (131, 'DAC', 101, NULL),
+  (141, 'DTISS', NULL, NULL),
+  (151, 'DIOT', 105, 12);
+
+INSERT INTO room 
+VALUES
+  (100, 'jasmin', '1st floor'),
+  (101, 'Rose', '2nd floor'),
+  (105, 'Lotus', '1st floor'),
+  (103, 'Mogra', '1st floor');
+
+
+
+SELECT c.cid, c.cname,null
+FROM courses c LEFT JOIN room r ON c.rid = r.rid
+WHERE r.rid IS NULL
+union
+SELECT rid, rname, rloc
+FROM room WHERE rid NOT IN (SELECT rid FROM courses);
+
+55.2
+select f.fid,f.fname
+from faculty f left join courses c on f.fid=c.fid
+where c.cid is null
+union
+select r.rid,r.rname
+from room r left join courses c on r.rid=c.cid
+where c.cid is null;
+
+55.3
+select r.rid,r.rname
+from room r left join courses c on r.rid=c.rid;
+
+55.4
+SELECT rid, rname, rloc
+FROM room
+WHERE rid NOT IN (SELECT rid FROM courses);
+
+55.5
+SELECT c.cid, c.cname, f.fname
+FROM courses c
+JOIN faculty f ON c.fid = f.fid
+WHERE f.spskill1 = 'database' OR f.spskill2 = 'database';
+
+55.6
+SELECT c.cid, c.cname, r.rname, r.rloc, f.fname
+FROM courses c
+JOIN room r ON c.rid = r.rid
+JOIN faculty f ON c.fid = f.fid;
+
+
+
